@@ -1,0 +1,28 @@
+# Dev-only Postgres for local runs and testing. The app itself is not containerized — the
+# exercise says skip deployment. This just spares you a local Postgres install; host port 5433
+# maps to the container's 5432 so it won't clash with an existing Postgres on 5432.
+#
+#   docker compose up -d      # start
+#   pnpm db:setup             # migrate (reads DATABASE_URL from .env)
+#   docker compose down       # stop  (add -v to wipe data)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: skyspecs-postgres
+    environment:
+      POSTGRES_USER: skyspecs
+      POSTGRES_PASSWORD: skyspecs
+      POSTGRES_DB: skyspecs
+    ports:
+      - "5433:5432"
+    volumes:
+      - skyspecs-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyspecs -d skyspecs"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  skyspecs-pgdata:

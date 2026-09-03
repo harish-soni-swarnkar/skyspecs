@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: skyspecs
+          POSTGRES_PASSWORD: skyspecs
+          POSTGRES_DB: skyspecs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U skyspecs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://skyspecs:skyspecs@localhost:5432/skyspecs
+      TEST_DATABASE_URL: postgres://skyspecs:skyspecs@localhost:5432/skyspecs_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Runs unit + integration; the integration suite hits the Postgres service above.
+      - name: Test (with coverage gates)
+        run: pnpm test:coverage
+
+      - name: Build web
+        run: pnpm build

@@ -1,0 +1,34 @@
+# deps + build artifacts (reinstalled/rebuilt inside the image)
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/*.tsbuildinfo
+
+# tests aren't needed to run the service
+**/*.test.ts
+
+# the API image doesn't need the web app
+apps/web
+
+# vcs / ci / editor / tooling
+.git
+.github
+.vscode
+.idea
+.claude
+.gitignore
+.dockerignore
+
+# env (secrets come from the runtime, never the image)
+.env
+.env.*
+!.env.example
+
+# docs
+*.md
+docs
+
+# logs / os
+*.log
+**/.DS_Store
